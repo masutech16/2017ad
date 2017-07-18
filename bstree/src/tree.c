@@ -14,6 +14,14 @@ typedef struct tree tree_t;
 int count;
 
 int tree_height(tree_t *t){
+  if(t == NULL) return 0;
+  int leftHeight = tree_height(t -> l);
+  int rightHeight = tree_height(t -> r);
+  if(leftHeight > rightHeight) {
+    return leftHeight + 1;
+  } else {
+    return rightHeight +1;
+  }
 }
 
 /*
@@ -21,6 +29,20 @@ int tree_height(tree_t *t){
   2分探索木 r の要素は必ず v より大きい
 */
 tree_t *tree_create(tree_t *l, int v, tree_t *r){
+  int height = 0;
+  int lheight = tree_height(l);
+  int rheight = tree_height(r);
+  if(lheight > rheight) {
+    height = lheight + 1;
+  } else {
+    height = rheight + 1;
+  }
+  tree_t *root = malloc(sizeof tree_t);
+  root -> l = l;
+  root -> v = v;
+  root -> r = r;
+  root -> h = height;
+  return root;
 }
 
 void tree_free(tree_t *t){
@@ -31,6 +53,10 @@ void tree_free(tree_t *t){
 }
 
 void tree_print_elements(tree_t *t){
+  if(t == NULL) return;
+  tree_print_elements(t -> l);
+  printf("%d\n",t -> v);
+  tree_print_elements(t -> r);
 }
 
 /*
@@ -45,27 +71,78 @@ tree_t *tree_bal(tree_t *l, int v, tree_t *r) {
 */
 
 int tree_mem(int x, tree_t *t){
+  if(t == NULL) return 0;
+  if((t -> v) == d) return 1;
+  //再帰処理
+  if((t -> v) > x) {
+    return tree_mem(x,t -> l);
+  } else {
+    return tree_mem(x, t -> r);
+  }
 }
 
 tree_t *tree_add(int x, tree_t *t) {
+  if(t == NULL) {
+    tree_t *root = tree_create(NULL,x,NULL);
+    return root;
+  }
+  if((t -> v) == d) return t;
+  if((t -> v) > x) {
+    t -> l = tree_add((t -> l),x);
+    return t;
+  } else {
+    t -> r = tree_add((t -> r),x);
+    return t;
+  }
 }
 
 int tree_min(tree_t *t){
+  while((t -> l) != NULL) {
+    t = (t -> l);
+  }
+  return t -> v;
 }
 
 int tree_max(tree_t *t){
+  while((t -> r) != NULL) {
+    t = (t -> r);
+  }
+  return t -> v;
 }
 
 tree_t *tree_remove_min(tree_t *t){
+  tree_t *tmp = t;
+  while((tmp -> l) != NULL){
+    tmp = tmp -> l;
+  }
+  free(tmp);
+  return t;
 }
 
 /*
   2分探索木 t1 の要素は必ず2分探索木 t2 の要素より小さい
 */
 tree_t *tree_merge(tree_t *t1, tree_t *t2){
+  tree_t *tmp = t2;
+  while((t2 -> l) != NULL) {
+    tmp = t2 -> l;
+  }
+  tmp -> l = t1;
 }
 
 tree_t *tree_remove(int x, tree_t *t){
+  if(!tree_mem(x,t)) return t;
+  tree_t parent = t;
+  //if((t -> v) == x)//rootでヒットする場合はレアケースなのでとりあえず放置
+  while(t -> v != x) {
+    parent = t;
+    if((t -> v) > x) {
+      t = t -> l;
+    } else {
+      t = t -> r;
+    }
+  }
+  if((parent -> l -> v))
 }
 
 /*
