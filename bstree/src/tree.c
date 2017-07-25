@@ -13,6 +13,10 @@ typedef struct tree tree_t;
 
 int count;
 
+/**
+ * @param t: 木
+ * @description: tが根の木の高さを返す関数
+ */
 int tree_height(tree_t *t){
   if(t == NULL) return 0;
   int leftHeight = tree_height(t -> l);
@@ -28,6 +32,12 @@ int tree_height(tree_t *t){
   2分探索木 l の要素は必ず v より小さい
   2分探索木 r の要素は必ず v より大きい
 */
+/**
+ * @param l: rootの左側につく木
+ * @param v: 新しい数字
+ * @param r: rootの右側につく木
+ * @description: 新しいnodeを生成し、その左にlを、右にrを入れた木を作る。返り値は根のポインタ
+ */
 tree_t *tree_create(tree_t *l, int v, tree_t *r){
   int height = 0;
   int lheight = tree_height(l);
@@ -37,7 +47,7 @@ tree_t *tree_create(tree_t *l, int v, tree_t *r){
   } else {
     height = rheight + 1;
   }
-  tree_t *root = malloc(sizeof tree_t);
+  tree_t *root = malloc(sizeof(tree_t));
   root -> l = l;
   root -> v = v;
   root -> r = r;
@@ -52,6 +62,20 @@ void tree_free(tree_t *t){
   }
 }
 
+/**
+ * @param t: 木
+ * @description: 木に含まれている数字の個数を出力する関数
+ */
+int tree_size(tree_t *t) {
+  if(t == NULL) return 0;
+  if(t -> h == 1) return 1;
+  return tree_size(t -> r) + tree_size(t ->l) + 1;
+}
+
+/**
+ * @param t: 木
+ * @description: 木に含まれている数字を小さい順に出力する関数
+ */
 void tree_print_elements(tree_t *t){
   if(t == NULL) return;
   tree_print_elements(t -> l);
@@ -70,9 +94,14 @@ tree_t *tree_bal(tree_t *l, int v, tree_t *r) {
 }
 */
 
+/**
+ * @param x: 調
+ * @param t: 木
+ * @description: tの中にxが関数含まれていれば1、なければ0を返す
+ */
 int tree_mem(int x, tree_t *t){
   if(t == NULL) return 0;
-  if((t -> v) == d) return 1;
+  if((t -> v) == x) return 1;
   //再帰処理
   if((t -> v) > x) {
     return tree_mem(x,t -> l);
@@ -81,21 +110,26 @@ int tree_mem(int x, tree_t *t){
   }
 }
 
+/**
+ * @param x: 付け加える数字
+ * @param t: 木
+ * @description: tにxを付け加え、その根を返す。元から含まれていれば引数tと等しいものを返す。
+ *  全て再生成しているのでメモリに注意
+ */
 tree_t *tree_add(int x, tree_t *t) {
-  if(t == NULL) {
-    tree_t *root = tree_create(NULL,x,NULL);
-    return root;
-  }
-  if((t -> v) == d) return t;
-  if((t -> v) > x) {
-    t -> l = tree_add((t -> l),x);
-    return t;
+  if(t == NULL) return tree_create(NULL,x,NULL);
+  if(t -> v == x) return t;
+  if(t -> v > x) {
+    return tree_create(tree_add(x, t -> l), t -> v, t -> r);
   } else {
-    t -> r = tree_add((t -> r),x);
-    return t;
+    return tree_create(t -> l, t -> v, tree_add(x, t -> r));
   }
 }
 
+/**
+ * @param t: 木
+ * @description: tに含まれる最小値を返す
+ */
 int tree_min(tree_t *t){
   while((t -> l) != NULL) {
     t = (t -> l);
@@ -103,6 +137,10 @@ int tree_min(tree_t *t){
   return t -> v;
 }
 
+/**
+ * @param t: 木
+ * @description: tに含まれる最大値を返す。
+ */
 int tree_max(tree_t *t){
   while((t -> r) != NULL) {
     t = (t -> r);
@@ -110,40 +148,43 @@ int tree_max(tree_t *t){
   return t -> v;
 }
 
+/**
+ * @param t: 木
+ * @description: tに含まれる最小値を除去する関数。返り値は最小の数字を除去した後の木の根
+ */
 tree_t *tree_remove_min(tree_t *t){
-  tree_t *tmp = t;
-  while((tmp -> l) != NULL){
-    tmp = tmp -> l;
-  }
-  free(tmp);
-  return t;
+  if(t -> l != NULL) return tree_create(tree_remove_min(t -> l), t-> v, t -> r);
+  if(t -> r != NULL) return tree_create(t -> r -> l, t -> r -> v, t ->r -> r);
+  return NULL;
 }
 
-/*
-  2分探索木 t1 の要素は必ず2分探索木 t2 の要素より小さい
-*/
+/**
+ * @param t1,t2: 木。t1の要素は必ずt2の要素より小さい
+ * @description: t1,t2の要素をすべて持つ木を返す。
+ */
 tree_t *tree_merge(tree_t *t1, tree_t *t2){
-  tree_t *tmp = t2;
-  while((t2 -> l) != NULL) {
-    tmp = t2 -> l;
-  }
-  tmp -> l = t1;
+  if(t2 == NULL) return t1;
+  return tree_create(t1, tree_min(t2),tree_remove_min(t2));
 }
 
+/**
+ * @param x: 除去する値
+ * @param t: 木
+ * @description: 指定された値を消す関数。除去した後の木を返す。
+ */
 tree_t *tree_remove(int x, tree_t *t){
-  if(!tree_mem(x,t)) return t;
-  tree_t parent = t;
-  //if((t -> v) == x)//rootでヒットする場合はレアケースなのでとりあえず放置
-  while(t -> v != x) {
-    parent = t;
-    if((t -> v) > x) {
-      t = t -> l;
-    } else {
-      t = t -> r;
-    }
+  if(t == NULL) return t;
+  if(t -> v == x) {
+    return tree_merge(t -> l, t -> r);
+  } else if(t -> v > x) {
+    return tree_create(tree_remove(x, t->l),t -> v, t -> r);
+  } else {
+    return tree_create(t -> r, t -> v, tree_remove(x, t -> r));
   }
-  if((parent -> l -> v))
+
 }
+
+//自作関数
 
 /*
 平衡性のチェック(発展的課題)
